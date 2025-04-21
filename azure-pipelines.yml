@@ -46,11 +46,10 @@ steps:
     Contents: '**/*'
     TargetFolder: '$(ARTIFACTS)'
 
-# 6) Publish the drop
-- task: PublishBuildArtifacts@1
-  displayName: '🚀 Publish drop'
+# 6. Publish the drop as a pipeline artifact
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish drop artifact (pipeline)'
   inputs:
-    PathtoPublish: '$(ARTIFACTS)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: 'drop'
 
