@@ -1,0 +1,55 @@
+# azure-pipelines.yml
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: Default          # your self‑hosted Windows pool
+  # specification is whatever your agent is set up as (e.g. vs2019/windows2019)
+
+variables:
+  # make the sourcesDir available
+  SRC: $(Build.SourcesDirectory)
+  # where to stage artifacts
+  ARTIFACTS: $(Build.ArtifactStagingDirectory)
+
+steps:
+# 1. Install Node 20.x
+- task: NodeTool@0
+  displayName: 'Install Node.js 20.x'
+  inputs:
+    versionSpec: '20.x'
+
+# 2. Restore dependencies
+- script: |
+    npm install
+  displayName: 'npm install'
+
+# 3. (Optional) Build step—if you have a 'build' script
+- script: |
+    npm run build
+  displayName: 'npm run build'
+
+# 4. (Optional) Run tests; won't fail the build if you prefer
+- script: |
+    npm test
+  displayName: 'npm test'
+  continueOnError: true
+
+# 5. Copy everything into the artifact staging folder
+- task: CopyFiles@2
+  displayName: 'Stage files for artifact'
+  inputs:
+    SourceFolder: '$(SRC)'
+    Contents: '**/*'
+    TargetFolder: '$(ARTIFACTS)'
+
+# 6. Publish the drop
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish drop artifact'
+  inputs:
+    PathtoPublish: '$(ARTIFACTS)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
