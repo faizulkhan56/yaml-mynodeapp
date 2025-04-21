@@ -4,7 +4,7 @@ const app = require('../server');
 const { expect } = require('chai');
 
 describe('GET /', () => {
-  it('should return 200 and the Hello message', done => {
+  it('returns Hello, Azure DevOps!', done => {
     request(app)
       .get('/')
       .expect(200)

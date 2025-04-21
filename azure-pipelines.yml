@@ -5,49 +5,50 @@ trigger:
       - main
 
 pool:
-  name: Default          # your self‑hosted Windows pool
-  # specification is whatever your agent is set up as (e.g. vs2019/windows2019)
+  name: Default   # your self‑hosted Windows Windows agent pool
 
 variables:
-  # make the sourcesDir available
   SRC: $(Build.SourcesDirectory)
-  # where to stage artifacts
   ARTIFACTS: $(Build.ArtifactStagingDirectory)
 
 steps:
-# 1. Install Node 20.x
+# 1) Install Node.js 20.x
 - task: NodeTool@0
-  displayName: 'Install Node.js 20.x'
+  displayName: '🟢 Install Node.js 20.x'
   inputs:
     versionSpec: '20.x'
 
-# 2. Restore dependencies
-- script: |
-    npm install
-  displayName: 'npm install'
+# 2) Restore dependencies
+- script: npm install
+  displayName: '📦 npm install'
 
-# 3. (Optional) Build step—if you have a 'build' script
-- script: |
-    npm run build
-  displayName: 'npm run build'
-
-# 4. (Optional) Run tests; won't fail the build if you prefer
-- script: |
-    npm test
-  displayName: 'npm test'
+# 3) Run tests (continues on error so we always publish results)
+- script: npm test
+  displayName: '✅ npm test'
   continueOnError: true
 
-# 5. Copy everything into the artifact staging folder
+# 4) Publish the JUnit XML into the Tests tab
+- task: PublishTestResults@2
+  displayName: '📊 Publish Test Results'
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/test-results.xml'
+    testRunTitle: 'Mocha Tests'
+    mergeTestResults: true
+    # if you want the build to still fail when tests fail, set this to true
+    failTaskOnFailedTests: false
+
+# 5) Stage your app as the drop artifact
 - task: CopyFiles@2
-  displayName: 'Stage files for artifact'
+  displayName: '📁 Stage files'
   inputs:
     SourceFolder: '$(SRC)'
     Contents: '**/*'
     TargetFolder: '$(ARTIFACTS)'
 
-# 6. Publish the drop
+# 6) Publish the drop
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish drop artifact'
+  displayName: '🚀 Publish drop'
   inputs:
     PathtoPublish: '$(ARTIFACTS)'
     ArtifactName: 'drop'
